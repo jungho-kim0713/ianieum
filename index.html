@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The History of World Cup - Museum Archive</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@200;400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --dark-navy: #0F172A;
+            --paper: #F5F5F0;
+        }
+
+        body {
+            font-family: 'Noto Serif KR', serif;
+            background-color: var(--dark-navy);
+            color: var(--paper);
+            overflow-x: hidden;
+        }
+
+        .font-playfair {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Custom Scrollbar for the timeline */
+        .timeline-scroll::-webkit-scrollbar {
+            height: 8px;
+        }
+        .timeline-scroll::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        .timeline-scroll::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        .timeline-scroll::-webkit-scrollbar-thumb:hover {
+            background: var(--gold);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .gold-gradient-text {
+            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .museum-card {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            background: linear-gradient(145deg, #1a2336, #0f172a);
+        }
+
+        /* Image Frame Effect */
+        .art-frame {
+            position: relative;
+            padding: 10px;
+            background-color: #2a2a2a;
+            box-shadow: inset 0 0 20px #000;
+            border: 2px solid var(--gold);
+        }
+        
+        .timeline-item.active {
+            color: var(--gold);
+            border-color: var(--gold);
+            transform: scale(1.1);
+        }
+
+        .spotlight {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col antialiased">
+
+    <!-- Header / Logo Area -->
+    <header class="flex-none p-6 md:p-8 flex justify-between items-center z-10 border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">
+        <div class="flex items-center gap-4 cursor-pointer" onclick="resetView()">
+            <i class="fas fa-landmark text-3xl text-amber-500"></i>
+            <div>
+                <h1 class="font-playfair text-2xl md:text-3xl font-bold tracking-wider text-amber-500">FIFA WORLD CUP</h1>
+                <p class="text-xs text-slate-400 tracking-[0.2em] uppercase">Historical Archive</p>
+            </div>
+        </div>
+        <div class="hidden md:block text-slate-500 text-sm italic">
+            "이음이는 똑똑하다. 그리고 이안이는 귀엽다."
+        </div>
+    </header>
+
+    <!-- Main Content Area (Dynamic) -->
+    <main class="flex-grow relative flex items-center justify-center overflow-hidden p-4">
+        <div class="spotlight"></div>
+
+        <!-- Initial Welcome View -->
+        <div id="intro-view" class="text-center z-10 max-w-4xl mx-auto px-4 fade-in">
+            <div class="mb-8 relative inline-block">
+                <i class="fas fa-trophy text-6xl md:text-8xl text-slate-700 opacity-50 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></i>
+                <h2 class="font-playfair text-5xl md:text-7xl lg:text-8xl font-bold mb-4 gold-gradient-text relative z-10">Legendary Moments</h2>
+            </div>
+            <p class="text-lg md:text-xl text-slate-300 leading-relaxed mb-10 font-light">
+                월드컵의 영광스러운 역사가 살아 숨 쉬는 공간에 오신 것을 환영합니다.<br>
+                아래의 타임라인에서 연도를 선택하여 그 시절의 열기를 다시 느껴보세요.
+            </p>
+            <div class="inline-block border border-amber-500/30 px-6 py-2 rounded-full text-amber-500/80 text-sm animate-pulse">
+                <i class="fas fa-arrow-down mr-2"></i> 역사를 탐험하려면 연도를 클릭하세요
+            </div>
+        </div>
+
+        <!-- Detail View (Hidden by default) -->
+        <div id="detail-view" class="hidden w-full max-w-6xl mx-auto z-10 h-full flex flex-col md:flex-row gap-8 items-center justify-center fade-in">
+            
+            <!-- Left: Visual/Image -->
+            <div class="w-full md:w-1/2 flex justify-center order-2 md:order-1">
+                <div class="art-frame w-full max-w-md aspect-[4/5] md:aspect-square relative overflow-hidden group">
+                    <img id="detail-image" src="/api/placeholder/600/600" alt="World Cup Moment" class="w-full h-full object-cover transition duration-700 group-hover:scale-110 opacity-90">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <div class="absolute bottom-4 left-4 right-4">
+                        <p id="detail-caption" class="text-amber-100 text-sm italic font-light border-l-2 border-amber-500 pl-3">
+                            <!-- Caption Injected Here -->
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Text Content -->
+            <div class="w-full md:w-1/2 text-left space-y-6 order-1 md:order-2">
+                <div class="border-b border-amber-500/30 pb-4">
+                    <h3 id="detail-year" class="font-playfair text-6xl md:text-8xl text-slate-800 absolute -z-10 -mt-8 ml-2 select-none opacity-20 font-bold">1930</h3>
+                    <h2 id="detail-host" class="text-3xl md:text-5xl font-bold text-amber-500 font-playfair mb-2">Uruguay 1930</h2>
+                    <div class="flex items-center gap-4 text-slate-400 text-sm uppercase tracking-widest">
+                        <span><i class="fas fa-medal text-amber-600 mr-2"></i>Winner: <span id="detail-winner" class="text-white font-bold">Uruguay</span></span>
+                    </div>
+                </div>
+
+                <div class="museum-card p-6 rounded-lg bg-opacity-50 backdrop-blur-md">
+                    <h4 class="text-lg font-bold text-amber-200 mb-3 border-l-4 border-amber-600 pl-3">The Story</h4>
+                    <p id="detail-desc" class="text-slate-300 leading-7 font-light text-justify">
+                        <!-- Description Injected Here -->
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <div class="bg-slate-800/50 p-4 border border-slate-700 rounded text-center">
+                        <div class="text-xs text-slate-500 uppercase">Goals Scored</div>
+                        <div id="detail-goals" class="text-2xl font-playfair text-amber-400">70</div>
+                    </div>
+                    <div class="bg-slate-800/50 p-4 border border-slate-700 rounded text-center">
+                        <div class="text-xs text-slate-500 uppercase">Teams</div>
+                        <div id="detail-teams" class="text-2xl font-playfair text-amber-400">13</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Timeline Navigation -->
+    <nav class="flex-none bg-slate-900 border-t border-slate-800 z-20 h-24 md:h-32 flex items-center">
+        <div class="w-full overflow-x-auto timeline-scroll px-4 md:px-10 flex items-center gap-8 md:gap-12" id="timeline-container">
+            <!-- Timeline items will be injected by JS -->
+        </div>
+    </nav>
+
+    <script>
+        // --- Data: World Cup History ---
+        const worldCupData = [
+            {
+                year: 1930,
+                host: "Uruguay",
+                winner: "Uruguay",
+                goals: 70,
+                teams: 13,
+                image: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&q=80&w=800",
+                caption: "초대 월드컵 결승전, 몬테비데오 센테나리오 스타디움.",
+                desc: "역사적인 첫 번째 FIFA 월드컵. 유럽의 많은 팀들이 긴 항해를 이유로 불참했으나, 개최국 우루과이가 아르헨티나를 꺾고 첫 우승 트로피 '쥘 리메 컵'을 들어 올렸습니다. 축구 역사의 위대한 시작이었습니다."
+            },
+            {
+                year: 1954,
+                host: "Switzerland",
+                winner: "West Germany",
+                goals: 140,
+                teams: 16,
+                image: "https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&q=80&w=800",
+                caption: "베른의 기적. 빗속의 결승전.",
+                desc: "이른바 '베른의 기적'. 당시 세계 최강이라 불리던 헝가리의 매직 마자르 군단을 상대로 서독이 극적인 역전승을 거두며 우승을 차지했습니다. 전쟁의 상처를 입은 독일 국민들에게 큰 희망을 준 대회였습니다."
+            },
+            {
+                year: 1970,
+                host: "Mexico",
+                winner: "Brazil",
+                goals: 95,
+                teams: 16,
+                image: "https://images.unsplash.com/photo-1551958219-acbc608c6377?auto=format&fit=crop&q=80&w=800",
+                caption: "축구 황제 펠레의 마지막 월드컵 우승.",
+                desc: "컬러 TV로 중계된 최초의 월드컵. 펠레가 이끄는 브라질 대표팀은 역사상 가장 완벽한 팀으로 평가받으며 통산 3회 우승을 달성, 쥘 리메 컵을 영구 소장하게 되었습니다."
+            },
+            {
+                year: 1986,
+                host: "Mexico",
+                winner: "Argentina",
+                goals: 132,
+                teams: 24,
+                image: "https://images.unsplash.com/photo-1628157577543-98219277c056?auto=format&fit=crop&q=80&w=800",
+                caption: "신의 손, 그리고 세기의 골.",
+                desc: "디에고 마라도나를 위한, 마라도나에 의한 월드컵. 잉글랜드전에서 보여준 '신의 손' 사건과 '60m 단독 드리블 골'은 월드컵 역사상 가장 충격적이고도 아름다운 순간으로 기억됩니다."
+            },
+            {
+                year: 1998,
+                host: "France",
+                winner: "France",
+                goals: 171,
+                teams: 32,
+                image: "https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?auto=format&fit=crop&q=80&w=800",
+                caption: "개최국 프랑스의 첫 우승, 지단이 탄생하다.",
+                desc: "참가국이 32개국으로 늘어난 첫 대회. 개최국 프랑스는 지네딘 지단의 맹활약 속에 결승에서 강력한 우승 후보 브라질을 3-0으로 완파하며 사상 첫 월드컵 우승을 차지했습니다."
+            },
+            {
+                year: 2002,
+                host: "Korea / Japan",
+                winner: "Brazil",
+                goals: 161,
+                teams: 32,
+                image: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?auto=format&fit=crop&q=80&w=800",
+                caption: "아시아 최초 개최, 붉은 악마의 함성.",
+                desc: "대한민국과 일본이 공동 개최한 21세기 첫 월드컵. 대한민국은 거스 히딩크 감독의 지휘 아래 4강 신화를 이룩하며 전 세계를 놀라게 했습니다. 브라질은 호나우두의 부활과 함께 5번째 우승을 달성했습니다."
+            },
+            {
+                year: 2006,
+                host: "Germany",
+                winner: "Italy",
+                goals: 147,
+                teams: 32,
+                image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&q=80&w=800",
+                caption: "지단의 박치기, 그리고 빗장수비의 승리.",
+                desc: "이탈리아의 '카테나치오(빗장수비)'가 빛을 발한 대회. 프랑스와의 결승전은 지단의 퇴장 사건으로 얼룩졌지만, 승부차기 끝에 이탈리아가 통산 4번째 우승을 차지했습니다."
+            },
+            {
+                year: 2014,
+                host: "Brazil",
+                winner: "Germany",
+                goals: 171,
+                teams: 32,
+                image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?auto=format&fit=crop&q=80&w=800",
+                caption: "미네이랑의 비극과 전차 군단의 완성.",
+                desc: "개최국 브라질이 독일에게 1-7로 패배한 '미네이랑의 비극'이 일어난 대회. 독일은 조직력의 정점을 보여주며 남미 대륙에서 우승한 최초의 유럽 팀이 되었습니다."
+            },
+            {
+                year: 2022,
+                host: "Qatar",
+                winner: "Argentina",
+                goals: 172,
+                teams: 32,
+                image: "https://images.unsplash.com/photo-1672322079040-47b85e054238?auto=format&fit=crop&q=80&w=800",
+                caption: "리오넬 메시, 마침내 황제의 대관식.",
+                desc: "사상 최초의 겨울 월드컵. 결승전에서 아르헨티나와 프랑스는 승부차기까지 가는 혈투를 벌였습니다. 결국 리오넬 메시는 자신의 마지막 월드컵에서 조국에 우승컵을 안기며 진정한 GOAT로 등극했습니다."
+            }
+        ];
+
+        // --- Logic ---
+        const timelineContainer = document.getElementById('timeline-container');
+        const introView = document.getElementById('intro-view');
+        const detailView = document.getElementById('detail-view');
+        
+        // DOM Elements for Detail View
+        const detailYear = document.getElementById('detail-year');
+        const detailHost = document.getElementById('detail-host');
+        const detailWinner = document.getElementById('detail-winner');
+        const detailDesc = document.getElementById('detail-desc');
+        const detailImage = document.getElementById('detail-image');
+        const detailCaption = document.getElementById('detail-caption');
+        const detailGoals = document.getElementById('detail-goals');
+        const detailTeams = document.getElementById('detail-teams');
+
+        // Initialize
+        function init() {
+            renderTimeline();
+        }
+
+        function renderTimeline() {
+            worldCupData.forEach(data => {
+                const btn = document.createElement('button');
+                btn.className = `timeline-item flex-none text-slate-500 hover:text-amber-400 font-playfair text-xl md:text-3xl font-bold transition-all duration-300 px-4 py-2 border-b-2 border-transparent hover:border-amber-400 focus:outline-none`;
+                btn.innerText = data.year;
+                btn.onclick = () => showDetail(data, btn);
+                timelineContainer.appendChild(btn);
+            });
+        }
+
+        function showDetail(data, clickedBtn) {
+            // Update active state in timeline
+            document.querySelectorAll('.timeline-item').forEach(el => el.classList.remove('active'));
+            clickedBtn.classList.add('active');
+
+            // Fade out current view (quick opacity transition)
+            const mainContent = document.querySelector('main');
+            
+            // Logic to swap content with animation
+            detailView.classList.remove('fade-in');
+            void detailView.offsetWidth; // trigger reflow
+            
+            introView.style.display = 'none';
+            detailView.style.display = 'flex';
+            detailView.classList.add('fade-in');
+
+            // Update Content
+            detailYear.innerText = data.year;
+            detailHost.innerText = `${data.host} ${data.year}`;
+            detailWinner.innerText = data.winner;
+            detailDesc.innerText = data.desc;
+            detailImage.src = data.image;
+            detailCaption.innerText = data.caption;
+            detailGoals.innerText = data.goals;
+            detailTeams.innerText = data.teams;
+        }
+
+        function resetView() {
+            document.querySelectorAll('.timeline-item').forEach(el => el.classList.remove('active'));
+            detailView.style.display = 'none';
+            introView.style.display = 'block';
+            introView.classList.add('fade-in');
+        }
+
+        // Run
+        init();
+
+    </script>
+</body>
+</html>
